@@ -4,12 +4,15 @@ const cors = require("cors");
 const Tesseract = require("tesseract.js");
 const fs = require("fs");
 const path = require("path");
-require("dotenv").config();
 const { OpenAI } = require("openai");
+const dotenv = require("dotenv");
+const colors = require("colors"); // Optional for colored logs
+const connectDB = require("./config/db"); // MongoDB connection
 
 const app = express();
 app.use(cors());
-const PORT = 5050;
+const PORT = process.env.PORT || 5000;
+connectDB(); // Connect to MongoDB
 
 // OpenAI setup
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -17,13 +20,14 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // Multer setup for image uploads
 const storage = multer.diskStorage({
   destination: "uploads/",
-  filename: (_, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
+  filename: (_, file, cb) =>
+    cb(null, Date.now() + path.extname(file.originalname)),
 });
 const upload = multer({ storage });
 
 // Route: Upload and Analyze
 app.post("/analyze", upload.single("file"), async (req, res) => {
-    console.log("File received:", req.file);
+  console.log("File received:", req.file);
   const imagePath = req.file.path;
 
   try {
@@ -65,4 +69,19 @@ Only return the JSON.`;
   }
 });
 
-app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+const server = app.listen(PORT, () => {
+  console.log(
+    `🚀 Server running in ${
+      process.env.NODE_ENV || "development"
+    } mode on port ${PORT}`.yellow.bold
+  );
+});
+
+// Handle unhandled promise rejections (e.g., database connection errors after initial connect)
+process.on("unhandledRejection", (err, promise) => {
+  console.error(`Unhandled Rejection: ${err.message}`.red);
+});
+
+app.get("/", (req, res) => {
+  res.send("API is running...");
+});
