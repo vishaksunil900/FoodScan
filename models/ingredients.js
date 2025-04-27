@@ -99,14 +99,55 @@ const ingredientSchema = new mongoose.Schema(
   }
 );
 
-//Optional: Text Index for free-text search across multiple fields
-ingredientSchema.index({ name: "text", display_name: "text", aliases: "text" });
+// --- Static Methods ---
 
-// Add a method for finding by name or alias (example)
+/**
+ * Finds a SINGLE ingredient document matching either the exact name or an alias.
+ * Useful when you expect only one result for a specific identifier.
+ * @param {string} searchTerm - The single name or alias to search for.
+ * @returns {Promise<Document|null>} A promise resolving to the found ingredient or null.
+ */
 ingredientSchema.statics.findByNameOrAlias = function (searchTerm) {
-  const normalizedTerm = searchTerm.toLowerCase().trim();
+  // Ensure searchTerm is a string before processing
+  const normalizedTerm = String(searchTerm || "")
+    .toLowerCase()
+    .trim();
+  if (!normalizedTerm) {
+    return Promise.resolve(null); // Return null if search term is empty
+  }
+  // Use findOne as we expect at most one match for a unique name/alias pair
   return this.findOne({
     $or: [{ name: normalizedTerm }, { aliases: normalizedTerm }],
+  });
+};
+
+/**
+ * Finds ALL ingredient documents where the name OR any alias matches ANY of the provided terms.
+ * Designed to work with an array of pre-normalized (lowercase, trimmed) terms.
+ * @param {string[]} termsArray - An array of lowercase, trimmed terms to search for.
+ * @returns {Promise<Document[]>} A promise resolving to an array of found ingredients.
+ */
+ingredientSchema.statics.findByTerms = function (termsArray) {
+  // Basic validation on the input array
+  if (!Array.isArray(termsArray) || termsArray.length === 0) {
+    return Promise.resolve([]); // Return empty array if no valid terms provided
+  }
+
+  // Filter out any potential non-string or empty values from the array defensively
+  const validTerms = termsArray.filter(
+    (term) => typeof term === "string" && term.length > 0
+  );
+
+  if (validTerms.length === 0) {
+    return Promise.resolve([]);
+  }
+
+  // Use find() with $in for efficient matching against multiple values in indexed fields
+  return this.find({
+    $or: [
+      { name: { $in: validTerms } }, // Check if the name is in the list of terms
+      { aliases: { $in: validTerms } }, // Check if any alias in the 'aliases' array is in the list of terms
+    ],
   });
 };
 

@@ -8,8 +8,11 @@ const { OpenAI } = require("openai");
 const dotenv = require("dotenv");
 const colors = require("colors"); // Optional for colored logs
 const connectDB = require("./config/db"); // MongoDB connection
+// --- Route Imports ---
+const ingredientRoutes = require("./routes/ingredientRoutes"); // Adjust path
 
 const app = express();
+app.use(express.json());
 app.use(cors());
 const PORT = process.env.PORT || 5000;
 connectDB(); // Connect to MongoDB
@@ -85,3 +88,6 @@ process.on("unhandledRejection", (err, promise) => {
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
+
+// Mount the ingredient routes under the /api/ingredients prefix
+app.use("/api/ingredients", ingredientRoutes);
