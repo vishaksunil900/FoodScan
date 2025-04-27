@@ -95,11 +95,25 @@ exports.searchIngredients = async (req, res) => {
     // 3. Split the string by comma
     // 4. Normalize each term (lowercase, trim)
     // 5. Filter out any empty strings resulting from splitting/trimming
-    const normalizedTerms = termsString
-      .split(",")
-      .map((term) => term.toLowerCase().trim())
-      .filter((term) => term.length > 0); // Filter ensures non-empty strings
+    // const normalizedTerms = termsString
+    //   .split(",")
+    //   .map((term) => term.toLowerCase().trim())
+    //   .filter((term) => term.length > 0); // Filter ensures non-empty strings
 
+    const normalizedTerms = termsString
+      .split(",") // 1. Split the string into an array by commas
+      .map(
+        (
+          term // 2. Process each element (potential term) in the array
+        ) =>
+          term
+            .toLowerCase() // 3. Convert the term to lowercase
+            .replace(/[\(\)\[\]\{\}]/g, "") // 4. Remove all instances of (), [], {} characters globally
+            .trim() // 5. Remove leading/trailing whitespace from the result
+      )
+      .filter((term) => term.length > 0); // 6. Remove any terms that are now empty strings
+
+    console.log(normalizedTerms);
     // 6. Validate that there are valid terms remaining after normalization
     if (normalizedTerms.length === 0) {
       return res.status(400).json({
@@ -168,10 +182,25 @@ exports.getIngredientsAndCheckMissing = async (req, res) => {
       });
     }
 
+    // const normalizedTerms = termsString
+    //   .split(",")
+    //   .map((term) => term.toLowerCase().trim())
+    //   .filter((term) => term.length > 0);
+
     const normalizedTerms = termsString
-      .split(",")
-      .map((term) => term.toLowerCase().trim())
-      .filter((term) => term.length > 0);
+      .split(",") // 1. Split the string into an array by commas
+      .map(
+        (
+          term // 2. Process each element (potential term) in the array
+        ) =>
+          term
+            .toLowerCase() // 3. Convert the term to lowercase
+            .replace(/[\(\)\[\]\{\}]/g, "") // 4. Remove all instances of (), [], {} characters globally
+            .trim() // 5. Remove leading/trailing whitespace from the result
+      )
+      .filter((term) => term.length > 0); // 6. Remove any terms that are now empty strings
+
+    console.log(normalizedTerms);
 
     if (normalizedTerms.length === 0) {
       return res.status(400).json({

@@ -1,10 +1,8 @@
 const express = require("express");
 const multer = require("multer");
 const cors = require("cors");
-const Tesseract = require("tesseract.js");
 const fs = require("fs");
 const path = require("path");
-const { OpenAI } = require("openai");
 const dotenv = require("dotenv");
 const colors = require("colors"); // Optional for colored logs
 const connectDB = require("./config/db"); // MongoDB connection
