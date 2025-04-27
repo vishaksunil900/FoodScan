@@ -54,7 +54,7 @@ const ingredientSchema = new mongoose.Schema(
       // Your calculated score (e.g., 1-5)
       type: Number,
       min: [1, "Health rating must be at least 1."], // Define min scale value
-      max: [5, "Health rating must be no more than 5."], // Define max scale value
+      max: [10, "Health rating must be no more than 10."], // Define max scale value
       index: true, // Index if commonly queried/filtered
     },
     rating_rationale: {
